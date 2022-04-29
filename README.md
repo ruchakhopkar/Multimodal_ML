@@ -1,0 +1,2 @@
+# Multimodal_ML
+A contribution to ALFRED (Action Learning From Realistic Environments and Directives), is a new benchmark for learning a mapping from natural language instructions and egocentric vision to sequences of actions for household tasks. Long composition rollouts with non-reversible state changes are among the phenomena we include to shrink the gap between research benchmarks and real-world applications.
