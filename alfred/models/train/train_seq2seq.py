@@ -36,7 +36,7 @@ if __name__ == '__main__':
     parser.add_argument('--lr', help='optimizer learning rate', default=1e-4, type=float)
     parser.add_argument('--decay_epoch', help='num epoch to adjust learning rate', default=10, type=int)
     parser.add_argument('--dhid', help='hidden layer size', default=512, type=int)
-    parser.add_argument('--dframe', help='image feature vec size', default=2500, type=int)
+    parser.add_argument('--dframe', help='image feature vec size', default=1024, type=int) #default=2500
     parser.add_argument('--demb', help='language embedding size', default=100, type=int)
     parser.add_argument('--pframe', help='image pixel size (assuming square shape eg: 300x300)', default=300, type=int)
     parser.add_argument('--mask_loss_wt', help='weight of mask loss', default=1., type=float)

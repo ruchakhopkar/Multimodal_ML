@@ -13,7 +13,9 @@ class SelfAttn(nn.Module):
         self.scorer = nn.Linear(dhid, 1)
 
     def forward(self, inp):
+        print("inp shape", inp.shape)
         scores = F.softmax(self.scorer(inp), dim=1)
+        print("scores", scores.shape)
         cont = scores.transpose(1, 2).bmm(inp).squeeze(1)
         return cont
 
@@ -200,25 +202,27 @@ class ConvFrameMaskDecoderProgressMonitor(nn.Module):
         self.pframe = pframe
         self.dhid = dhid
         self.vis_encoder = ResnetVisualEncoder(dframe=dframe)
-        self.cell = nn.LSTMCell(dhid+dframe+demb, dhid)
+        self.cell = nn.LSTMCell(dframe+demb, dhid)
         self.attn = DotAttn()
+        self.Myattn = SelfAttn(dframe) # My Attention added. It is SELF ATTENTION
         self.input_dropout = nn.Dropout(input_dropout)
         self.attn_dropout = nn.Dropout(attn_dropout)
         self.hstate_dropout = nn.Dropout(hstate_dropout)
         self.actor_dropout = nn.Dropout(actor_dropout)
         self.go = nn.Parameter(torch.Tensor(demb))
-        self.actor = nn.Linear(dhid+dhid+dframe+demb, demb)
-        self.mask_dec = MaskDecoder(dhid=dhid+dhid+dframe+demb, pframe=self.pframe)
+        self.actor = nn.Linear(dhid+dframe+demb, demb)
+        self.mask_dec = MaskDecoder(dhid=dhid+dframe+demb, pframe=self.pframe)
         self.teacher_forcing = teacher_forcing
         self.h_tm1_fc = nn.Linear(dhid, dhid)
 
-        self.subgoal = nn.Linear(dhid+dhid+dframe+demb, 1)
-        self.progress = nn.Linear(dhid+dhid+dframe+demb, 1)
+        self.subgoal = nn.Linear(dhid+dframe+demb, 1)
+        self.progress = nn.Linear(dhid+dframe+demb, 1)
 
         nn.init.uniform_(self.go, -0.1, 0.1)
-
+        
     def step(self, enc, frame, e_t, state_tm1):
         # previous decoder hidden state
+        #print("state_tm1", state_tm1)
         h_tm1 = state_tm1[0]
 
         # encode vision and lang feat
@@ -229,8 +233,12 @@ class ConvFrameMaskDecoderProgressMonitor(nn.Module):
         weighted_lang_t, lang_attn_t = self.attn(self.attn_dropout(lang_feat_t), self.h_tm1_fc(h_tm1))
 
         # concat visual feats, weight lang, and previous action embedding
-        inp_t = torch.cat([vis_feat_t, weighted_lang_t, e_t], dim=1)
+        dot_feat = torch.multiply(vis_feat_t, weighted_lang_t) # dot product of vision and lang features 8 x 1024
+        dot_feat = dot_feat.unsqueeze(1)
+        dot_feat = self.Myattn(dot_feat)
+        inp_t = torch.cat([dot_feat, e_t], dim=1)
         inp_t = self.input_dropout(inp_t)
+
 
         # update hidden state
         state_t = self.cell(inp_t, state_tm1)
