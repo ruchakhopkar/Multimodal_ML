@@ -1,2 +1,3 @@
+*.pyc 
 ./alfred/data
 ./alfred/exp
