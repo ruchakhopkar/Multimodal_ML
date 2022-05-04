@@ -17,19 +17,13 @@ class Dataset(object):
         self.dataset_path = args.data
         self.pframe = args.pframe
 
-#         if vocab is None:
-#             self.vocab = {
-#                 'word': Vocab(['<<pad>>', '<<seg>>', '<<goal>>']),
-#                 'action_low': Vocab(['<<pad>>', '<<seg>>', '<<stop>>']),
-#                 'action_high': Vocab(['<<pad>>', '<<seg>>', '<<stop>>']),
-#             }
-#         else:
-#             self.vocab = vocab
+        self.vocab = {
+            'word': RobertaTokenizer.from_pretrained("roberta-base", sep_token = '<<seg>>', pad_token = '<<pad>>', eos_token = '<<goal>>'),
+            'action_low': RobertaTokenizer.from_pretrained("roberta-base", sep_token = '<<seg>>', pad_token = '<<pad>>', eos_token = '<<stop>>'),
+            'action_high': RobertaTokenizer.from_pretrained("roberta-base", sep_token = '<<seg>>', pad_token = '<<pad>>', eos_token = '<<stop>>'),
+        }
 
-        self.tokenizer = RobertaTokenizer.from_pretrained("roberta-base", sep_token = '<<seg>>', pad_token = '<<pad>>', eos_token = '<<stop>>', additional_special_tokens=['<<goal>>'])
-
-        self.word_seg = self.tokenizer('<<seg>>', return_tensors='pt', padding=True, truncation=True)['input_ids']
-
+        self.word_seg = self.vocab['word']('<<seg>>', return_tensors='pt', padding=True, truncation=True)['input_ids']
 
     @staticmethod
     def numericalize(tokenizer, words):
@@ -112,8 +106,8 @@ class Dataset(object):
 
         # numericalize language
         traj['num'] = {}
-        traj['num']['lang_goal'] = self.numericalize(self.tokenizer, traj['ann']['goal'])
-        traj['num']['lang_instr'] = [self.numericalize(self.tokenizer, x) for x in traj['ann']['instr']]
+        traj['num']['lang_goal'] = self.numericalize(self.vocab['word'], traj['ann']['goal'])
+        traj['num']['lang_instr'] = [self.numericalize(self.vocab['word'], x) for x in traj['ann']['instr']]
 
 
     def process_actions(self, ex, traj):
@@ -141,7 +135,7 @@ class Dataset(object):
             # low-level action (API commands)
             traj['num']['action_low'][high_idx].append({
                 'high_idx': a['high_idx'],
-                'action': self.tokenizer(a['discrete_action']['action'], return_tensors='pt', padding=True, truncation=True)['input_ids'],
+                'action': self.vocab['action_low'](a['discrete_action']['action'], return_tensors='pt', padding=True, truncation=True)['input_ids'],
                 'action_high_args': a['discrete_action']['args'],
             })
 
@@ -173,8 +167,8 @@ class Dataset(object):
         for a in ex['plan']['high_pddl']:
             traj['num']['action_high'].append({
                 'high_idx': a['high_idx'],
-                'action': self.tokenizer(a['discrete_action']['action'], return_tensors='pt', padding=True, truncation=True)['input_ids'],
-                'action_high_args': self.numericalize(self.tokenizer, a['discrete_action']['args']),
+                'action': self.vocab['action_high'](a['discrete_action']['action'], return_tensors='pt', padding=True, truncation=True)['input_ids'],
+                'action_high_args': self.numericalize(self.vocab['action_high'], a['discrete_action']['args']),
             })
 
         # check alignment between step-by-step language and action sequence segments
