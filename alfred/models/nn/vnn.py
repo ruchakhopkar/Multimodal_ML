@@ -41,7 +41,7 @@ class ResnetVisualEncoder(nn.Module):
     def __init__(self, dframe):
         super(ResnetVisualEncoder, self).__init__()
         self.dframe = dframe
-        self.flattened_size = 64*1*1
+        self.flattened_size = 64*7*7
 
         self.conv1 = nn.Conv2d(512, 256, kernel_size=1, stride=1, padding=0)
         self.conv2 = nn.Conv2d(256, 64, kernel_size=1, stride=1, padding=0)
@@ -67,7 +67,7 @@ class MaskDecoder(nn.Module):
     mask decoder
     '''
 
-    def __init__(self, dhid, pframe=300, hshape=(64,1,1)):
+    def __init__(self, dhid, pframe=300, hshape=(64,7,7)):
         super(MaskDecoder, self).__init__()
         self.dhid = dhid
         self.hshape = hshape

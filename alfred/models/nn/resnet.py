@@ -1,85 +1,6 @@
 import torch
 import torch.nn as nn
 from torchvision import models, transforms
-import timm
-import urllib
-from PIL import Image
-from timm.data import resolve_data_config
-from timm.data.transforms_factory import create_transform
-import os
-
-#Model Architechture
-
-class MLP(nn.Module):
-
-    # define model elements
-    def __init__(self, size):
-        super(MLP, self).__init__()
-        
-        self.model = nn.Sequential(nn.Linear(size[0], size[1]), 
-                                   nn.BatchNorm1d(size[1]),
-                                   nn.LeakyReLU(),
-                                   nn.Dropout(0.1),
-                                   nn.Linear(size[1], size[2]), 
-                                   nn.BatchNorm1d(size[2]),
-                                   nn.LeakyReLU(),
-                                   nn.Dropout(0.1),
-                                   nn.Linear(size[2], size[3]),
-                                   nn.BatchNorm1d(size[3]),
-                                   nn.LeakyReLU(),
-                                   nn.Dropout(0.1),
-                                   nn.Linear(size[3], size[4]),  
-                                   nn.BatchNorm1d(size[4]),                                 
-                                   nn.LeakyReLU(),
-                                   nn.Dropout(0.1),
-                                   nn.Linear(size[4], size[5]))
-        self.model2 = nn.Sequential(nn.BatchNorm1d(size[5]),
-                                   nn.LeakyReLU(),
-                                   nn.Dropout(0.1),
-                                   nn.Linear(size[5], size[6]))
-        
-    def forward(self, x, eval = True):
-          # Model forward pass
-          logits=self.model(x)
-          logits2 = self.model2(logits)
-          if eval:
-            return logits, logits2
-          return logits2
-
-class Darknet():
-    def __init__(self, darknet_model_file, mlp_model_file, args, eval=True, share_memory=False):
-
-        # self.optimizer = optimizer
-        self.model = timm.create_model('cspdarknet53', pretrained=True)
-        self.config = resolve_data_config({}, model=self.model)
-        self.transform = create_transform(**self.config)
-
-        net = torch.load(os.path.join(darknet_model_file))
-        self.model.load_state_dict(net['model_state_dict'])
-
-        self.mlp_model = MLP([2000,4096,4096,2048,1024,512, 12])
-        mlp_net = torch.load(os.path.join(mlp_model_file))
-        self.mlp_model.load_state_dict(mlp_net['model_state_dict'])
-        # self.optimizer.load_state_dict(net['optimizer_state_dict'])
-
-        if args.gpu:
-            self.model = self.model.to(torch.device('cuda'))
-            self.mlp_model = self.mlp_model.to(torch.device('cuda')) 
-
-        if eval:
-            self.model = self.model.eval()
-            self.mlp_model = self.mlp_model.eval()
-
-        if share_memory:
-            self.model.share_memory()
-            self.mlp_model.share_memory()
-
-    def extract(self, x):
-        inp = self.transform(x.convert('RGB'))
-        inp = torch.unsqueeze(inp,axis=0)
-        out = self.model(inp.cuda())
-        out = self.mlp_model(out)
-        return out[0]
 
 
 class Resnet18(object):
@@ -128,7 +49,6 @@ class MaskRCNN(object):
 
     def extract(self, x):
         features = self.model(x)
-        print("masked_RCnn", x.shape, features[self.feat_layer].shape)
         return features[self.feat_layer]
 
 
