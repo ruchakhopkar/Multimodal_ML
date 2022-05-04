@@ -4,36 +4,39 @@ import revtok
 import torch
 import copy
 import progressbar
-from vocab import Vocab
+# from vocab import Vocab
 from model.seq2seq import Module as model
 from gen.utils.py_util import remove_spaces_and_lower
 from gen.utils.game_util import sample_templated_task_desc_from_traj_data
+from transformers import RobertaTokenizer
 
 class Dataset(object):
 
-    def __init__(self, args, vocab=None):
+    def __init__(self, args):
         self.args = args
         self.dataset_path = args.data
         self.pframe = args.pframe
 
-        if vocab is None:
-            self.vocab = {
-                'word': Vocab(['<<pad>>', '<<seg>>', '<<goal>>']),
-                'action_low': Vocab(['<<pad>>', '<<seg>>', '<<stop>>']),
-                'action_high': Vocab(['<<pad>>', '<<seg>>', '<<stop>>']),
-            }
-        else:
-            self.vocab = vocab
+#         if vocab is None:
+#             self.vocab = {
+#                 'word': Vocab(['<<pad>>', '<<seg>>', '<<goal>>']),
+#                 'action_low': Vocab(['<<pad>>', '<<seg>>', '<<stop>>']),
+#                 'action_high': Vocab(['<<pad>>', '<<seg>>', '<<stop>>']),
+#             }
+#         else:
+#             self.vocab = vocab
 
-        self.word_seg = self.vocab['word'].word2index('<<seg>>', train=False)
+        self.tokenizer = RobertaTokenizer.from_pretrained("roberta-base", sep_token = '<<seg>>', pad_token = '<<pad>>', eos_token = '<<stop>>', additional_special_tokens=['<<goal>>'])
+
+        self.word_seg = self.tokenizer('<<seg>>', return_tensors='pt', padding=True, truncation=True)['input_ids']
 
 
     @staticmethod
-    def numericalize(vocab, words, train=True):
+    def numericalize(tokenizer, words):
         '''
         converts words to unique integers
         '''
-        return vocab.word2index([w.strip().lower() for w in words], train=train)
+        return tokenizer([w.strip().lower() for w in words], return_tensors='pt', padding=True, truncation=True)['input_ids']
 
 
     def preprocess_splits(self, splits):
@@ -82,12 +85,12 @@ class Dataset(object):
                     json.dump(traj, f, sort_keys=True, indent=4)
 
         # save vocab in dout path
-        vocab_dout_path = os.path.join(self.args.dout, '%s.vocab' % self.args.pp_folder)
-        torch.save(self.vocab, vocab_dout_path)
+#         vocab_dout_path = os.path.join(self.args.dout, '%s.vocab' % self.args.pp_folder)
+#         torch.save(self.vocab, vocab_dout_path)
 
         # save vocab in data path
-        vocab_data_path = os.path.join(self.args.data, '%s.vocab' % self.args.pp_folder)
-        torch.save(self.vocab, vocab_data_path)
+#         vocab_data_path = os.path.join(self.args.data, '%s.vocab' % self.args.pp_folder)
+#         torch.save(self.vocab, vocab_data_path)
 
 
     def process_language(self, ex, traj, r_idx, use_templated_goals=False):
@@ -109,8 +112,8 @@ class Dataset(object):
 
         # numericalize language
         traj['num'] = {}
-        traj['num']['lang_goal'] = self.numericalize(self.vocab['word'], traj['ann']['goal'], train=True)
-        traj['num']['lang_instr'] = [self.numericalize(self.vocab['word'], x, train=True) for x in traj['ann']['instr']]
+        traj['num']['lang_goal'] = self.numericalize(self.tokenizer, traj['ann']['goal'])
+        traj['num']['lang_instr'] = [self.numericalize(self.tokenizer, x) for x in traj['ann']['instr']]
 
 
     def process_actions(self, ex, traj):
@@ -138,7 +141,7 @@ class Dataset(object):
             # low-level action (API commands)
             traj['num']['action_low'][high_idx].append({
                 'high_idx': a['high_idx'],
-                'action': self.vocab['action_low'].word2index(a['discrete_action']['action'], train=True),
+                'action': self.tokenizer(a['discrete_action']['action'], return_tensors='pt', padding=True, truncation=True)['input_ids'],
                 'action_high_args': a['discrete_action']['args'],
             })
 
@@ -170,8 +173,8 @@ class Dataset(object):
         for a in ex['plan']['high_pddl']:
             traj['num']['action_high'].append({
                 'high_idx': a['high_idx'],
-                'action': self.vocab['action_high'].word2index(a['discrete_action']['action'], train=True),
-                'action_high_args': self.numericalize(self.vocab['action_high'], a['discrete_action']['args']),
+                'action': self.tokenizer(a['discrete_action']['action'], return_tensors='pt', padding=True, truncation=True)['input_ids'],
+                'action_high_args': self.numericalize(self.tokenizer, a['discrete_action']['args']),
             })
 
         # check alignment between step-by-step language and action sequence segments
