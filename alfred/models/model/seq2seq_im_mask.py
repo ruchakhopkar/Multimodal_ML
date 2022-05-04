@@ -71,7 +71,6 @@ class Module(Base):
             ###########
             # auxillary
             ###########
-
             if not self.test_mode:
                 # subgoal completion supervision
                 if self.args.subgoal_aux_loss_wt > 0:
@@ -105,7 +104,7 @@ class Module(Base):
             if load_frames and not self.test_mode:
                 root = self.get_task_root(ex)
                 im = torch.load(os.path.join(root, self.feat_pt))
-#                 print(im.shape, "immmmmm", root)
+                # print(im.shape, "immmmmm")
 
                 num_low_actions = len(ex['plan']['low_actions']) + 1  # +1 for additional stop action
                 num_feat_frames = im.shape[0]
@@ -124,6 +123,36 @@ class Module(Base):
                     keep[-1] = im[-1]  # stop frame
 #                     print(keep.shape)
                     feat['frames'].append(torch.stack(keep, dim=0))
+                
+                count = 0
+            
+                num_obj_list = []
+                for var in range(num_low_actions -1 ):
+                    objset = set()
+                    if 'objectId' in ex['plan']['low_actions'][var]['api_action']:
+                        # len_api_action = len(ex['plan']['low_actions'][var]['api_action'])
+                        for key_action, value_action in enumerate(ex['plan']['low_actions'][var]['api_action']):
+                            #print(value_action)
+                            if "objectid" in value_action.lower():
+                                obj_val = ex['plan']['low_actions'][var]['api_action'][value_action]
+                                try:
+                                    obj_val = obj_val.split('|')[0]
+                                except:
+                                    obj_val = obj_val[0]
+                                objset.add(obj_val)  
+                    num_obj_list.append(float(len(objset)))
+                     
+                num_obj_list.append(0)
+                num_obj_list = np.asarray(num_obj_list, dtype=np.float32)
+                feat['gt_num'].append(num_obj_list)   
+                
+#                 print("num_obj_list", num_obj_list)
+
+#                 print(feat['gt_num'])
+#                 print("feat['gt_num'] shape", len(feat['gt_num'][0]))
+#                 print("feat['frames'] shape", len(feat['frames'][0]))
+                        
+              
 
             #########
             # outputs
@@ -191,20 +220,12 @@ class Module(Base):
 
 
     def forward(self, feat, max_decode=300):
-#         print("="*80)
-#         print(len(feat['frames']), feat.keys())
-#         print("="*80)
         cont_lang, enc_lang = self.encode_lang(feat)
-#         print(cont_lang.shape, enc_lang.shape)
         state_0 = cont_lang, torch.zeros_like(cont_lang)
-#         print(state_0[0].shape, state_0[1].shape)
         frames = self.vis_dropout(feat['frames'])
-        
         res = self.dec(enc_lang, frames, max_decode=max_decode, gold=feat['action_low'], state_0=state_0)
         feat.update(res)
-#         print(res.keys())
-#         print(frames[0].shape, feat['frames'].shape)
-#         print("="*80)
+
         return feat
 
 
@@ -312,6 +333,9 @@ class Module(Base):
         '''
         loss function for Seq2Seq agent
         '''
+        
+#         print("out", out.keys())
+#         print("feat", feat.keys())
         losses = dict()
 
         # GT and predictions
@@ -351,7 +375,16 @@ class Module(Base):
             pg_loss = pg_loss.view(-1) * pad_valid.float()
             progress_loss = pg_loss.mean()
             losses['progress_aux'] = self.args.pm_aux_loss_wt * progress_loss
-
+            
+        # Counting Loss
+        if self.args.counting_aux_loss_wt > 0:
+            p_counting = feat['out_counting'].squeeze(2)
+            l_counting = feat['gt_num'].type(torch.FloatTensor).cuda()
+            ct_loss = self.mse_loss(p_counting, l_counting)
+            ct_loss = ct_loss.view(-1) * pad_valid.float()
+            counting_loss = ct_loss.mean()
+            losses['counting_aux'] = self.args.counting_aux_loss_wt * counting_loss
+            
         return losses
 
 

@@ -8,6 +8,7 @@ import numpy as np
 from torch import nn
 from tensorboardX import SummaryWriter
 from tqdm import trange
+import pdb
 
 class Module(nn.Module):
 
@@ -90,7 +91,6 @@ class Module(nn.Module):
 #             random.shuffle(train) # shuffle every epoch
             for batch, feat in self.iterate(train, args.batch):
                 out = self.forward(feat)
-#                 print(feat)
                 preds = self.extract_preds(out, batch, feat)
                 # p_train.update(preds)
                 loss = self.compute_loss(out, batch, feat)
@@ -102,6 +102,7 @@ class Module(nn.Module):
                 # optimizer backward pass
                 optimizer.zero_grad()
                 sum_loss = sum(loss.values())
+                # pdb.set_trace()
                 sum_loss.backward()
                 optimizer.step()
 
@@ -110,6 +111,7 @@ class Module(nn.Module):
                 total_train_loss.append(float(sum_loss))
                 train_iter += self.args.batch
 
+            print('Epoch', epoch, 'Loss:',  loss)
             ## compute metrics for train (too memory heavy!)
             # m_train = {k: sum(v) / len(v) for k, v in m_train.items()}
             # m_train.update(self.compute_metric(p_train, train))

@@ -97,6 +97,10 @@ class MaskDecoder(nn.Module):
         x = F.interpolate(x, size=(self.pframe, self.pframe), mode='bilinear')
 
         return x
+    
+# class ObjectDecoder(nn.Module):
+#     def __init__(self, dhid, pframe=300, hshape=(64,1,1)):
+    
 
 
 class ConvFrameMaskDecoder(nn.Module):
@@ -214,6 +218,7 @@ class ConvFrameMaskDecoderProgressMonitor(nn.Module):
 
         self.subgoal = nn.Linear(dhid+dhid+dframe+demb, 1)
         self.progress = nn.Linear(dhid+dhid+dframe+demb, 1)
+        self.counting = nn.Linear(dhid+dhid+dframe+demb, 1)
 
         nn.init.uniform_(self.go, -0.1, 0.1)
 
@@ -246,8 +251,9 @@ class ConvFrameMaskDecoderProgressMonitor(nn.Module):
         # predict subgoals completed and task progress
         subgoal_t = F.sigmoid(self.subgoal(cont_t))
         progress_t = F.sigmoid(self.progress(cont_t))
+        counting_t = F.relu(self.counting(cont_t))
 
-        return action_t, mask_t, state_t, lang_attn_t, subgoal_t, progress_t
+        return action_t, mask_t, state_t, lang_attn_t, subgoal_t, progress_t, counting_t
 
     def forward(self, enc, frames, gold=None, max_decode=150, state_0=None):
         max_t = gold.size(1) if self.training else min(max_decode, frames.shape[1])
@@ -260,13 +266,15 @@ class ConvFrameMaskDecoderProgressMonitor(nn.Module):
         attn_scores = []
         subgoals = []
         progresses = []
+        countings = []
         for t in range(max_t):
-            action_t, mask_t, state_t, attn_score_t, subgoal_t, progress_t = self.step(enc, frames[:, t], e_t, state_t)
+            action_t, mask_t, state_t, attn_score_t, subgoal_t, progress_t, counting_t = self.step(enc, frames[:, t], e_t, state_t)
             masks.append(mask_t)
             actions.append(action_t)
             attn_scores.append(attn_score_t)
             subgoals.append(subgoal_t)
             progresses.append(progress_t)
+            countings.append(counting_t)
 
             # find next emb
             if self.teacher_forcing and self.training:
@@ -281,6 +289,7 @@ class ConvFrameMaskDecoderProgressMonitor(nn.Module):
             'out_attn_scores': torch.stack(attn_scores, dim=1),
             'out_subgoal': torch.stack(subgoals, dim=1),
             'out_progress': torch.stack(progresses, dim=1),
+            'out_counting': torch.stack(countings, dim=1),
             'state_t': state_t
         }
         return results
