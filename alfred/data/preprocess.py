@@ -59,7 +59,7 @@ class Dataset(object):
                 traj['root'] = os.path.join(self.args.data, task['task'])
                 traj['split'] = k
                 traj['repeat_idx'] = r_idx
-
+                print(traj)
                 # numericalize language
                 use_templated_goals = self.args.use_templated_goals and train_mode # templated goals are not available for the test set
                 self.process_language(ex, traj, r_idx, use_templated_goals=use_templated_goals)
@@ -79,12 +79,12 @@ class Dataset(object):
                     json.dump(traj, f, sort_keys=True, indent=4)
 
         # save vocab in dout path
-#         vocab_dout_path = os.path.join(self.args.dout, '%s.vocab' % self.args.pp_folder)
-#         torch.save(self.vocab, vocab_dout_path)
+        vocab_dout_path = os.path.join(self.args.dout, '%s.vocab' % self.args.pp_folder)
+        torch.save(self.vocab, vocab_dout_path)
 
         # save vocab in data path
-#         vocab_data_path = os.path.join(self.args.data, '%s.vocab' % self.args.pp_folder)
-#         torch.save(self.vocab, vocab_data_path)
+        vocab_data_path = os.path.join(self.args.data, '%s.vocab' % self.args.pp_folder)
+        torch.save(self.vocab, vocab_data_path)
 
 
     def process_language(self, ex, traj, r_idx, use_templated_goals=False):
