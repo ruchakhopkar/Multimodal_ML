@@ -23,14 +23,14 @@ class Dataset(object):
             'action_high': RobertaTokenizer.from_pretrained("roberta-base", sep_token = '<<seg>>', pad_token = '<<pad>>', eos_token = '<<stop>>'),
         }
 
-        self.word_seg = self.vocab['word']('<<seg>>', return_tensors='pt', padding=True, truncation=True)['input_ids']
+        self.word_seg = self.vocab['word']('<<seg>>', padding=True, truncation=True)['input_ids']
 
     @staticmethod
     def numericalize(tokenizer, words):
         '''
         converts words to unique integers
         '''
-        return tokenizer([w.strip().lower() for w in words], return_tensors='pt', padding=True, truncation=True)['input_ids']
+        return tokenizer([w.strip().lower() for w in words], padding=True, truncation=True)['input_ids']
 
 
     def preprocess_splits(self, splits):
@@ -135,7 +135,7 @@ class Dataset(object):
             # low-level action (API commands)
             traj['num']['action_low'][high_idx].append({
                 'high_idx': a['high_idx'],
-                'action': self.vocab['action_low'](a['discrete_action']['action'], return_tensors='pt', padding=True, truncation=True)['input_ids'],
+                'action': self.vocab['action_low'](a['discrete_action']['action'], padding=True, truncation=True)['input_ids'],
                 'action_high_args': a['discrete_action']['args'],
             })
 
@@ -167,7 +167,7 @@ class Dataset(object):
         for a in ex['plan']['high_pddl']:
             traj['num']['action_high'].append({
                 'high_idx': a['high_idx'],
-                'action': self.vocab['action_high'](a['discrete_action']['action'], return_tensors='pt', padding=True, truncation=True)['input_ids'],
+                'action': self.vocab['action_high'](a['discrete_action']['action'], padding=True, truncation=True)['input_ids'],
                 'action_high_args': self.numericalize(self.vocab['action_high'], a['discrete_action']['args']),
             })
 
