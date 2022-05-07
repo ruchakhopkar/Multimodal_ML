@@ -4,7 +4,7 @@ import revtok
 import torch
 import copy
 import progressbar
-# from vocab import Vocab
+from vocab import Vocab
 from model.seq2seq import Module as model
 from gen.utils.py_util import remove_spaces_and_lower
 from gen.utils.game_util import sample_templated_task_desc_from_traj_data
@@ -19,9 +19,9 @@ class Dataset(object):
 
         self.vocab = {
             'word': RobertaTokenizer.from_pretrained("roberta-base", sep_token = '<<seg>>', pad_token = '<<pad>>', eos_token = '<<goal>>'),
-            'action_low': RobertaTokenizer.from_pretrained("roberta-base", sep_token = '<<seg>>', pad_token = '<<pad>>', eos_token = '<<stop>>'),
-            'action_high': RobertaTokenizer.from_pretrained("roberta-base", sep_token = '<<seg>>', pad_token = '<<pad>>', eos_token = '<<stop>>'),
-        }
+            'action_low': Vocab(['<<pad>>', '<<seg>>', '<<stop>>']),
+            'action_high': Vocab(['<<pad>>', '<<seg>>', '<<stop>>'])
+            }
 
         self.word_seg = self.vocab['word']('<<seg>>', padding=True, truncation=True)['input_ids'][1:]
 
@@ -32,6 +32,12 @@ class Dataset(object):
         '''
         return tokenizer(" ".join(w.strip().lower() for w in words), padding=True, truncation=True)['input_ids'][1:]
 
+    @staticmethod
+    def numericalize_vocab(vocab, words, train=True):
+        '''
+        converts words to unique integers
+        '''
+        return vocab.word2index([w.strip().lower() for w in words], train=train)
 
     def preprocess_splits(self, splits):
         '''
@@ -135,7 +141,7 @@ class Dataset(object):
             # low-level action (API commands)
             traj['num']['action_low'][high_idx].append({
                 'high_idx': a['high_idx'],
-                'action': self.vocab['action_low'](a['discrete_action']['action'], padding=True, truncation=True)['input_ids'][1:],
+                'action': self.vocab['action_low'].word2index(a['discrete_action']['action'], train=True),
                 'action_high_args': a['discrete_action']['args'],
             })
 
@@ -168,8 +174,8 @@ class Dataset(object):
             #print(a['discrete_action']['args'])
             traj['num']['action_high'].append({
                 'high_idx': a['high_idx'],
-                'action': self.vocab['action_high'](a['discrete_action']['action'], padding=True, truncation=True)['input_ids'][1:],
-                'action_high_args': self.numericalize(self.vocab['action_high'], a['discrete_action']['args']),
+                'action': self.vocab['action_high'].word2index(a['discrete_action']['action'], train=True),
+                'action_high_args': self.numericalize_vocab(self.vocab['action_high'], a['discrete_action']['args']),
             })
 
         # check alignment between step-by-step language and action sequence segments
