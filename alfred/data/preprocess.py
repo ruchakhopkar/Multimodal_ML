@@ -23,14 +23,14 @@ class Dataset(object):
             'action_high': RobertaTokenizer.from_pretrained("roberta-base", sep_token = '<<seg>>', pad_token = '<<pad>>', eos_token = '<<stop>>'),
         }
 
-        self.word_seg = self.vocab['word']('<<seg>>', padding=True, truncation=True)['input_ids']
+        self.word_seg = self.vocab['word']('<<seg>>', padding=True, truncation=True)['input_ids'][1:]
 
     @staticmethod
     def numericalize(tokenizer, words):
         '''
         converts words to unique integers
         '''
-        return tokenizer([w.strip().lower() for w in words], padding=True, truncation=True)['input_ids']
+        return tokenizer(" ".join(w.strip().lower() for w in words), padding=True, truncation=True)['input_ids'][1:]
 
 
     def preprocess_splits(self, splits):
@@ -59,7 +59,7 @@ class Dataset(object):
                 traj['root'] = os.path.join(self.args.data, task['task'])
                 traj['split'] = k
                 traj['repeat_idx'] = r_idx
-                print(traj)
+                # print(traj)
                 # numericalize language
                 use_templated_goals = self.args.use_templated_goals and train_mode # templated goals are not available for the test set
                 self.process_language(ex, traj, r_idx, use_templated_goals=use_templated_goals)
@@ -135,7 +135,7 @@ class Dataset(object):
             # low-level action (API commands)
             traj['num']['action_low'][high_idx].append({
                 'high_idx': a['high_idx'],
-                'action': self.vocab['action_low'](a['discrete_action']['action'], padding=True, truncation=True)['input_ids'],
+                'action': self.vocab['action_low'](a['discrete_action']['action'], padding=True, truncation=True)['input_ids'][1:],
                 'action_high_args': a['discrete_action']['args'],
             })
 
@@ -165,9 +165,10 @@ class Dataset(object):
 
         # high-level actions
         for a in ex['plan']['high_pddl']:
+            #print(a['discrete_action']['args'])
             traj['num']['action_high'].append({
                 'high_idx': a['high_idx'],
-                'action': self.vocab['action_high'](a['discrete_action']['action'], padding=True, truncation=True)['input_ids'],
+                'action': self.vocab['action_high'](a['discrete_action']['action'], padding=True, truncation=True)['input_ids'][1:],
                 'action_high_args': self.numericalize(self.vocab['action_high'], a['discrete_action']['args']),
             })
 
