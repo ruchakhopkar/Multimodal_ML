@@ -143,7 +143,7 @@ class Module(Base):
 
         # tensorization and padding
         for k, v in feat.items():
-            print(k)
+            # print(k)
             if k in {'lang_goal_instr'}:
                 # language embedding and padding
                 seqs = [torch.tensor(vv, device=device) for vv in v]
@@ -167,8 +167,8 @@ class Module(Base):
                 # for vv in v:
                 #     print('vv is',vv)
                 #print(v)
-                seqs = [torch.tensor(vv[0], device=device, dtype=torch.float if ('frames' in k) else torch.long) for vv in v]
-                print(seqs)
+                seqs = [torch.tensor(vv, device=device, dtype=torch.float if ('frames' in k) else torch.long) for vv in v]
+                # print(seqs)
                 pad_seq = pad_sequence(seqs, batch_first=True, padding_value=self.pad)
                 feat[k] = pad_seq
 
