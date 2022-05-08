@@ -9,7 +9,7 @@ from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence, pad_packed_se
 from model.seq2seq import Module as Base
 from models.utils.metric import compute_f1, compute_exact
 from gen.utils.image_util import decompress_mask
-
+zoom_count = 0
 
 class Module(Base):
 
@@ -18,7 +18,7 @@ class Module(Base):
         Seq2Seq agent
         '''
         super().__init__(args, vocab)
-
+        self.zoom_count = 0
         # encoder and self-attention
         self.enc = nn.LSTM(args.demb, args.dhid, bidirectional=True, batch_first=True)
         self.enc_att = vnn.SelfAttn(args.dhid*2)
@@ -59,6 +59,7 @@ class Module(Base):
 
         # reset model
         self.reset()
+        
 
     def featurize(self, batch, load_mask=True, load_frames=True):
         '''
@@ -92,7 +93,7 @@ class Module(Base):
 
             # goal and instr language
             lang_goal, lang_instr = ex['num']['lang_goal'], ex['num']['lang_instr']
-
+            #rint(lang_instr)
             # zero inputs if specified
             lang_goal = self.zero_input(lang_goal) if self.args.zero_goal else lang_goal
             lang_instr = self.zero_input(lang_instr) if self.args.zero_instr else lang_instr
@@ -105,7 +106,6 @@ class Module(Base):
             if load_frames and not self.test_mode:
                 root = self.get_task_root(ex)
                 im = torch.load(os.path.join(root, self.feat_pt))
-#                 print(im.shape, "immmmmm", root)
 
                 num_low_actions = len(ex['plan']['low_actions']) + 1  # +1 for additional stop action
                 num_feat_frames = im.shape[0]
@@ -122,7 +122,6 @@ class Module(Base):
                         if keep[d['low_idx']] is None:
                             keep[d['low_idx']] = im[i]
                     keep[-1] = im[-1]  # stop frame
-#                     print(keep.shape)
                     feat['frames'].append(torch.stack(keep, dim=0))
 
             #########
@@ -162,7 +161,6 @@ class Module(Base):
                 feat[k] = pad_seq
             else:
                 # default: tensorize and pad sequence
-                
                 seqs = [torch.tensor(vv, device=device, dtype=torch.float if ('frames' in k) else torch.long) for vv in v]
                 pad_seq = pad_sequence(seqs, batch_first=True, padding_value=self.pad)
                 feat[k] = pad_seq
@@ -191,20 +189,11 @@ class Module(Base):
 
 
     def forward(self, feat, max_decode=300):
-#         print("="*80)
-#         print(len(feat['frames']), feat.keys())
-#         print("="*80)
         cont_lang, enc_lang = self.encode_lang(feat)
-#         print(cont_lang.shape, enc_lang.shape)
         state_0 = cont_lang, torch.zeros_like(cont_lang)
-#         print(state_0[0].shape, state_0[1].shape)
         frames = self.vis_dropout(feat['frames'])
-        
         res = self.dec(enc_lang, frames, max_decode=max_decode, gold=feat['action_low'], state_0=state_0)
         feat.update(res)
-#         print(res.keys())
-#         print(frames[0].shape, feat['frames'].shape)
-#         print("="*80)
         return feat
 
 
@@ -312,6 +301,7 @@ class Module(Base):
         '''
         loss function for Seq2Seq agent
         '''
+        
         losses = dict()
 
         # GT and predictions
@@ -352,18 +342,30 @@ class Module(Base):
             progress_loss = pg_loss.mean()
             losses['progress_aux'] = self.args.pm_aux_loss_wt * progress_loss
 
-        return losses
+        return losses,self.zoom_count
 
 
     def weighted_mask_loss(self, pred_masks, gt_masks):
         '''
         mask loss that accounts for weight-imbalance between 0 and 1 pixels
         '''
-        bce = self.bce_with_logits(pred_masks, gt_masks)
-        flipped_mask = self.flip_tensor(gt_masks)
-        inside = (bce * gt_masks).sum() / (gt_masks).sum()
-        outside = (bce * flipped_mask).sum() / (flipped_mask).sum()
-        return inside + outside
+        
+        #print(pred_masks.shape, gt_masks.shape)
+        l1 = []
+        for i in range(2):
+            bce = self.bce_with_logits(pred_masks[:,i,:,:].unsqueeze(1), gt_masks)
+            flipped_mask = self.flip_tensor(gt_masks)
+            inside = (bce * gt_masks).sum() / (gt_masks).sum()
+            outside = (bce * flipped_mask).sum() / (flipped_mask).sum()
+            l1.append(inside + outside)
+        min_idx = l1.index(min(l1))
+        if min_idx == 1:
+            self.zoom_count+=1
+            #print()
+            #print('minimum loss is at the index:',min_idx)
+        print('zoomed_loss', l1[1])
+        print('actual_loss', l1[0])
+        return l1[min_idx]
 
 
     def flip_tensor(self, tensor, on_zero=1, on_non_zero=0):

@@ -8,7 +8,7 @@ import numpy as np
 from torch import nn
 from tensorboardX import SummaryWriter
 from tqdm import trange
-import pdb
+
 class Module(nn.Module):
 
     def __init__(self, args, vocab):
@@ -90,11 +90,9 @@ class Module(nn.Module):
             random.shuffle(train) # shuffle every epoch
             for batch, feat in self.iterate(train, args.batch):
                 out = self.forward(feat)
-                
                 preds = self.extract_preds(out, batch, feat)
                 # p_train.update(preds)
                 loss = self.compute_loss(out, batch, feat)
-                
                 for k, v in loss.items():
                     ln = 'loss_' + k
                     m_train[ln].append(v.item())

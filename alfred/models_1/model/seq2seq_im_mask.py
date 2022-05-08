@@ -92,7 +92,7 @@ class Module(Base):
 
             # goal and instr language
             lang_goal, lang_instr = ex['num']['lang_goal'], ex['num']['lang_instr']
-            #rint(lang_instr)
+
             # zero inputs if specified
             lang_goal = self.zero_input(lang_goal) if self.args.zero_goal else lang_goal
             lang_instr = self.zero_input(lang_instr) if self.args.zero_instr else lang_instr
@@ -300,7 +300,6 @@ class Module(Base):
         '''
         loss function for Seq2Seq agent
         '''
-        
         losses = dict()
 
         # GT and predictions
@@ -348,7 +347,6 @@ class Module(Base):
         '''
         mask loss that accounts for weight-imbalance between 0 and 1 pixels
         '''
-        s
         bce = self.bce_with_logits(pred_masks, gt_masks)
         flipped_mask = self.flip_tensor(gt_masks)
         inside = (bce * gt_masks).sum() / (gt_masks).sum()

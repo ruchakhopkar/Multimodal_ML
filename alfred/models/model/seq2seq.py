@@ -8,7 +8,7 @@ import numpy as np
 from torch import nn
 from tensorboardX import SummaryWriter
 from tqdm import trange
-
+import pdb
 class Module(nn.Module):
 
     def __init__(self, args, vocab):
@@ -65,7 +65,7 @@ class Module(nn.Module):
             train = train[:16]
             valid_seen = valid_seen[:16]
             valid_unseen = valid_unseen[:16]
-        
+
         # initialize summary writer for tensorboardX
         self.summary_writer = SummaryWriter(log_dir=args.dout)
 
@@ -87,13 +87,14 @@ class Module(nn.Module):
             self.adjust_lr(optimizer, args.lr, epoch, decay_epoch=args.decay_epoch)
             # p_train = {}
             total_train_loss = list()
-#             random.shuffle(train) # shuffle every epoch
+            random.shuffle(train) # shuffle every epoch
             for batch, feat in self.iterate(train, args.batch):
                 out = self.forward(feat)
-#                 print(feat)
+                
                 preds = self.extract_preds(out, batch, feat)
                 # p_train.update(preds)
-                loss = self.compute_loss(out, batch, feat)
+                loss, zoom_count = self.compute_loss(out, batch, feat)
+                
                 for k, v in loss.items():
                     ln = 'loss_' + k
                     m_train[ln].append(v.item())
@@ -130,7 +131,8 @@ class Module(nn.Module):
 
             stats = {'epoch': epoch,
                      'valid_seen': m_valid_seen,
-                     'valid_unseen': m_valid_unseen}
+                     'valid_unseen': m_valid_unseen,
+                    'zoom_count': zoom_count}
 
             # new best valid_seen loss
             if total_valid_seen_loss < best_loss['valid_seen']:
@@ -213,11 +215,11 @@ class Module(nn.Module):
             preds = self.extract_preds(out, batch, feat)
             p_dev.update(preds)
             loss = self.compute_loss(out, batch, feat)
-            for k, v in loss.items():
+            for k, v in loss[0].items():
                 ln = 'loss_' + k
                 m_dev[ln].append(v.item())
                 self.summary_writer.add_scalar("%s/%s" % (name, ln), v.item(), dev_iter)
-            sum_loss = sum(loss.values())
+            sum_loss = sum(loss[0].values())
             self.summary_writer.add_scalar("%s/loss" % (name), sum_loss, dev_iter)
             total_loss.append(float(sum_loss.detach().cpu()))
             dev_iter += len(batch)

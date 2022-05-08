@@ -57,7 +57,7 @@ EndSection
         xorg_conf.append(device_section.format(device_id=i, bus_id=bus_id))
         xorg_conf.append(screen_section.format(device_id=i, screen_id=i))
         screen_records.append('Screen {screen_id} "Screen{screen_id}" 0 0'.format(screen_id=i))
-    
+
     xorg_conf.append(server_layout_section.format(screen_records="\n    ".join(screen_records)))
 
     output =  "\n".join(xorg_conf)
@@ -70,7 +70,7 @@ def startx(display):
 
     devices = []
     for r in pci_records():
-        if r.get('Vendor', '') == 'NVIDIA Corporation'\
+        if r.get('Vendor', '') == 'NVIDIA Corporation' \
                 and r['Class'] in ['VGA compatible controller', '3D controller']:
             bus_id = 'PCI:' + ':'.join(map(lambda x: str(int(x, 16)), re.split(r'[:\.]', r['Slot'])))
             devices.append(bus_id)
@@ -82,9 +82,9 @@ def startx(display):
         fd, path = tempfile.mkstemp()
         with open(path, "w") as f:
             f.write(generate_xorg_conf(devices))
-        command = shlex.split("Xorg -noreset -logfile xorg.log -logverbose -config %s :%s" % (path, display))
+        command = shlex.split("Xorg -noreset +extension GLX +extension RANDR +extension RENDER -config %s :%s" % (path, display))
         subprocess.call(command)
-    finally: 
+    finally:
         os.close(fd)
         os.unlink(path)
 

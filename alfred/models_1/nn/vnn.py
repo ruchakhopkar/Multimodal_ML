@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 from torch.nn import functional as F
-import pdb
+
 
 class SelfAttn(nn.Module):
     '''
@@ -28,7 +28,6 @@ class DotAttn(nn.Module):
         return score.expand_as(inp).mul(inp).sum(1), score
 
     def softmax(self, inp, h):
-        print('inside dot att',inp.shape,h.shape)
         raw_score = inp.bmm(h.unsqueeze(2))
         score = F.softmax(raw_score, dim=1)
         return score
@@ -42,7 +41,7 @@ class ResnetVisualEncoder(nn.Module):
     def __init__(self, dframe):
         super(ResnetVisualEncoder, self).__init__()
         self.dframe = dframe
-        self.flattened_size = 64*1*1
+        self.flattened_size = 64*5*1
 
         self.conv1 = nn.Conv2d(1000, 256, kernel_size=1, stride=1, padding=0)
         self.conv2 = nn.Conv2d(256, 64, kernel_size=1, stride=1, padding=0)
@@ -56,12 +55,10 @@ class ResnetVisualEncoder(nn.Module):
 
         x = self.conv2(x)
         x = F.relu(self.bn2(x))
-        #print(x.shape)
-        bs, _, zoom , _ = x.shape
-        x = x.reshape(x.shape[0]*x.shape[2], -1)
+
+        x = x.view(-1, self.flattened_size)
         x = self.fc(x)
-#         x = torch.reshape(x, (bs,zoom, -1))
-        
+
         return x
 
 
@@ -138,8 +135,7 @@ class ConvFrameMaskDecoder(nn.Module):
         # encode vision and lang feat
         vis_feat_t = self.vis_encoder(frame)
         lang_feat_t = enc # language is encoded once at the start
-        lang_feat_t = torch.unsqueeze(1)
-        
+
         # attend over language
         weighted_lang_t, lang_attn_t = self.attn(self.attn_dropout(lang_feat_t), self.h_tm1_fc(h_tm1))
 
@@ -220,53 +216,22 @@ class ConvFrameMaskDecoderProgressMonitor(nn.Module):
         self.progress = nn.Linear(dhid+dhid+dframe+demb, 1)
 
         nn.init.uniform_(self.go, -0.1, 0.1)
-        
-    def broadcast_input(self, input_):
-        input_ = input_.unsqueeze(1)
-        if len(input_.shape) == 4:
-            input_ = torch.broadcast_to(input_,(8,5,input_.shape[2],input_.shape[3]))    
-            input_ = input_.reshape(input_.shape[0]*input_.shape[1],input_.shape[2],input_.shape[3])
-
-        else:
-            input_ = torch.broadcast_to(input_,(8,5,-1))
-            input_ = input_.reshape(input_.shape[0]*input_.shape[1], -1)
-        return input_
 
     def step(self, enc, frame, e_t, state_tm1):
         # previous decoder hidden state
-
         h_tm1 = state_tm1[0]
-        #print(frame.shape)
+
         # encode vision and lang feat
         vis_feat_t = self.vis_encoder(frame)
         lang_feat_t = enc # language is encoded once at the start
-        
-        #print(torch.min(lang_feat_t), torch.max(lang_feat_t))
-        #print(lang_feat_t)
-        # attend over language
-#         lang_feat_t =  self.broadcast_input(lang_feat_t)
-        weighted_lang_t, lang_attn_t = self.attn(self.attn_dropout(lang_feat_t), self.h_tm1_fc(h_tm1))
-        weighted_lang_t = self.broadcast_input(weighted_lang_t)
-        e_t = self.broadcast_input(e_t)
-        state_tm1_0 = self.broadcast_input(state_tm1[0])
-        state_tm1_1 = self.broadcast_input(state_tm1[1])
-        state_tm1 = (state_tm1_0,state_tm1_1)
-        
-#         print(state_tm1[0].shape)
 
-#         weighted_lang_t = weighted_lang_t.unsqueeze(1)
-#         weighted_lang_t = torch.broadcast_to(weighted_lang_t,(8,5,-1))
-#         weighted_lang_t = weighted_lang_t.reshape(weighted_lang_t.shape[0]*weighted_lang_t.shape[1], -1)
-        
-#         e_t = e_t.unsqueeze(1)
-#         e_t = torch.broadcast_to(e_t,(8,5,-1))
-#         e_t = e_t.reshape(e_t.shape[0]*e_t.shape[1], -1)
+        # attend over language
+        weighted_lang_t, lang_attn_t = self.attn(self.attn_dropout(lang_feat_t), self.h_tm1_fc(h_tm1))
+
         # concat visual feats, weight lang, and previous action embedding
-        print('weighted_lang_t',weighted_lang_t.shape)
-        print('e_t',e_t.shape)
         inp_t = torch.cat([vis_feat_t, weighted_lang_t, e_t], dim=1)
         inp_t = self.input_dropout(inp_t)
-        print('state shape', state_tm1[0].shape, state_tm1[1].shape)
+
         # update hidden state
         state_t = self.cell(inp_t, state_tm1)
         state_t = [self.hstate_dropout(x) for x in state_t]
@@ -283,13 +248,7 @@ class ConvFrameMaskDecoderProgressMonitor(nn.Module):
         progress_t = F.sigmoid(self.progress(cont_t))
 
         return action_t, mask_t, state_t, lang_attn_t, subgoal_t, progress_t
-    
-    def reshape_(self,input_,drop=True):
-        input_ = input_.reshape(8,5,-1)
-        if drop:
-            input_ = input_[:,0,:]
-        return input_
-    
+
     def forward(self, enc, frames, gold=None, max_decode=150, state_0=None):
         max_t = gold.size(1) if self.training else min(max_decode, frames.shape[1])
         batch = enc.size(0)
@@ -303,19 +262,6 @@ class ConvFrameMaskDecoderProgressMonitor(nn.Module):
         progresses = []
         for t in range(max_t):
             action_t, mask_t, state_t, attn_score_t, subgoal_t, progress_t = self.step(enc, frames[:, t], e_t, state_t)
-            print('_'*80)
-            action_t = self.reshape_(action_t)
-            mask_t = self.reshape_(mask_t,drop=False)
-            state_t[0] = self.reshape_(state_t[0])
-            state_t[1] = self.reshape_(state_t[1])
-            subgoal_t = self.reshape_(subgoal_t)
-            progress_t = self.reshape_(progress_t)
-            print('mask_t',mask_t.shape)
-            print('action_t',action_t.shape)
-            print('state_t',len(state_t),state_t[0].shape,state_t[1].shape)
-            print('attn_score_t',attn_score_t.shape)
-            print('subgoal_t',subgoal_t.shape)
-            print('progress_t',progress_t.shape)
             masks.append(mask_t)
             actions.append(action_t)
             attn_scores.append(attn_score_t)

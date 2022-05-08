@@ -1,0 +1,272 @@
+{'tests_seen': 1533,
+ 'tests_unseen': 1529,
+ 'train': 21023,
+ 'valid_seen': 820,
+ 'valid_unseen': 821}
+Loading:  exp/model:seq2seq_im_mask,name:pm_and_subgoals_01/best_unseen.pth
+Found path: /home/ubuntu/.ai2thor/releases/thor-201909061227-Linux64/thor-201909061227-Linux64
+Mono path[0] = '/home/ubuntu/.ai2thor/releases/thor-201909061227-Linux64/thor-201909061227-Linux64_Data/Managed'
+Mono config path = '/home/ubuntu/.ai2thor/releases/thor-201909061227-Linux64/thor-201909061227-Linux64_Data/Mono/etc'
+Preloaded 'ScreenSelector.so'
+Display 0 'NVIDIA VGX  32"': 1024x768 (primary device).
+Logging to /home/ubuntu/.config/unity3d/Allen Institute for Artificial Intelligence/AI2-Thor/Player.log
+ThorEnv started.
+Evaluating: data/json_feat_2.1.0/pick_heat_then_place_in_recep-PotatoSliced-None-SinkBasin-13/trial_T20190909_115736_122556
+No. of trajectories left: 819
+Resetting ThorEnv
+Task: Place a cooked potato slice in the sink
+--------------------------------------------------------------------------------
+x.shape torch.Size([1, 1000, 5, 1])
+torch.Size([5, 2500])
+inside dot att torch.Size([1, 228, 1024]) torch.Size([1, 1024])
+score torch.Size([1, 228, 1])
+input shape torch.Size([1, 1, 1024])
+input shape torch.Size([1, 1, 100])
+input shape torch.Size([1, 1024])
+input torch.Size([1, 1, 1024])
+input shape torch.Size([1, 1024])
+input torch.Size([1, 1, 1024])
+concat features torch.Size([5, 2500]) torch.Size([5, 1, 1024]) torch.Size([5, 1, 100])
+Error: RuntimeError('Sizes of tensors must match except in dimension 1. Expected size 2500 but got size 1024 for tensor number 1 in the list.',)
+Evaluating: data/json_feat_2.1.0/pick_heat_then_place_in_recep-PotatoSliced-None-SinkBasin-13/trial_T20190909_115736_122556
+No. of trajectories left: 818
+Resetting ThorEnv
+Task: Put a cooked piece of potato in the sink.
+--------------------------------------------------------------------------------
+x.shape torch.Size([1, 1000, 5, 1])
+torch.Size([5, 2500])
+inside dot att torch.Size([1, 104, 1024]) torch.Size([1, 1024])
+score torch.Size([1, 104, 1])
+input shape torch.Size([1, 1, 1024])
+input shape torch.Size([1, 1, 100])
+input shape torch.Size([1, 1024])
+input torch.Size([1, 1, 1024])
+input shape torch.Size([1, 1024])
+input torch.Size([1, 1, 1024])
+concat features torch.Size([5, 2500]) torch.Size([5, 1, 1024]) torch.Size([5, 1, 100])
+Error: RuntimeError('Sizes of tensors must match except in dimension 1. Expected size 2500 but got size 1024 for tensor number 1 in the list.',)
+Evaluating: data/json_feat_2.1.0/pick_heat_then_place_in_recep-PotatoSliced-None-SinkBasin-13/trial_T20190909_115736_122556
+No. of trajectories left: 817
+Resetting ThorEnv
+Task: Put a sliced egg inside the sink
+--------------------------------------------------------------------------------
+x.shape torch.Size([1, 1000, 5, 1])
+torch.Size([5, 2500])
+inside dot att torch.Size([1, 180, 1024]) torch.Size([1, 1024])
+score torch.Size([1, 180, 1])
+input shape torch.Size([1, 1, 1024])
+input shape torch.Size([1, 1, 100])
+input shape torch.Size([1, 1024])
+input torch.Size([1, 1, 1024])
+input shape torch.Size([1, 1024])
+input torch.Size([1, 1, 1024])
+concat features torch.Size([5, 2500]) torch.Size([5, 1, 1024]) torch.Size([5, 1, 100])
+Error: RuntimeError('Sizes of tensors must match except in dimension 1. Expected size 2500 but got size 1024 for tensor number 1 in the list.',)
+Evaluating: data/json_feat_2.1.0/pick_and_place_simple-Vase-None-CoffeeTable-207/trial_T20190909_091246_807206
+No. of trajectories left: 816
+Resetting ThorEnv
+Task: Place a vase on a coffee table
+--------------------------------------------------------------------------------
+x.shape torch.Size([1, 1000, 5, 1])
+torch.Size([5, 2500])
+inside dot att torch.Size([1, 68, 1024]) torch.Size([1, 1024])
+score torch.Size([1, 68, 1])
+input shape torch.Size([1, 1, 1024])
+input shape torch.Size([1, 1, 100])
+input shape torch.Size([1, 1024])
+input torch.Size([1, 1, 1024])
+input shape torch.Size([1, 1024])
+input torch.Size([1, 1, 1024])
+concat features torch.Size([5, 2500]) torch.Size([5, 1, 1024]) torch.Size([5, 1, 100])
+Error: RuntimeError('Sizes of tensors must match except in dimension 1. Expected size 2500 but got size 1024 for tensor number 1 in the list.',)
+Evaluating: data/json_feat_2.1.0/pick_and_place_simple-Vase-None-CoffeeTable-207/trial_T20190909_091246_807206
+No. of trajectories left: 815
+Resetting ThorEnv
+Task: Place a bowl on a table.
+--------------------------------------------------------------------------------
+x.shape torch.Size([1, 1000, 5, 1])
+torch.Size([5, 2500])
+inside dot att torch.Size([1, 75, 1024]) torch.Size([1, 1024])
+score torch.Size([1, 75, 1])
+input shape torch.Size([1, 1, 1024])
+input shape torch.Size([1, 1, 100])
+input shape torch.Size([1, 1024])
+input torch.Size([1, 1, 1024])
+input shape torch.Size([1, 1024])
+input torch.Size([1, 1, 1024])
+concat features torch.Size([5, 2500]) torch.Size([5, 1, 1024]) torch.Size([5, 1, 100])
+Error: RuntimeError('Sizes of tensors must match except in dimension 1. Expected size 2500 but got size 1024 for tensor number 1 in the list.',)
+Evaluating: data/json_feat_2.1.0/pick_and_place_simple-Vase-None-CoffeeTable-207/trial_T20190909_091246_807206
+No. of trajectories left: 814
+Resetting ThorEnv
+Task: Move bowl to coffee table.
+--------------------------------------------------------------------------------
+x.shape torch.Size([1, 1000, 5, 1])
+torch.Size([5, 2500])
+inside dot att torch.Size([1, 63, 1024]) torch.Size([1, 1024])
+score torch.Size([1, 63, 1])
+input shape torch.Size([1, 1, 1024])
+input shape torch.Size([1, 1, 100])
+input shape torch.Size([1, 1024])
+input torch.Size([1, 1, 1024])
+input shape torch.Size([1, 1024])
+input torch.Size([1, 1, 1024])
+concat features torch.Size([5, 2500]) torch.Size([5, 1, 1024]) torch.Size([5, 1, 100])
+Error: RuntimeError('Sizes of tensors must match except in dimension 1. Expected size 2500 but got size 1024 for tensor number 1 in the list.',)
+Evaluating: data/json_feat_2.1.0/pick_and_place_simple-Knife-None-SideTable-3/trial_T20190918_184236_557252
+No. of trajectories left: 813
+Resetting ThorEnv
+Task: place a knife on the microwave oven table
+--------------------------------------------------------------------------------
+x.shape torch.Size([1, 1000, 5, 1])
+torch.Size([5, 2500])
+inside dot att torch.Size([1, 42, 1024]) torch.Size([1, 1024])
+score torch.Size([1, 42, 1])
+input shape torch.Size([1, 1, 1024])
+input shape torch.Size([1, 1, 100])
+input shape torch.Size([1, 1024])
+input torch.Size([1, 1, 1024])
+input shape torch.Size([1, 1024])
+input torch.Size([1, 1, 1024])
+concat features torch.Size([5, 2500]) torch.Size([5, 1, 1024]) torch.Size([5, 1, 100])
+Error: RuntimeError('Sizes of tensors must match except in dimension 1. Expected size 2500 but got size 1024 for tensor number 1 in the list.',)
+Evaluating: data/json_feat_2.1.0/pick_and_place_simple-Knife-None-SideTable-3/trial_T20190918_184236_557252
+No. of trajectories left: 812
+Resetting ThorEnv
+Task: Put a knife on the counter. 
+--------------------------------------------------------------------------------
+x.shape torch.Size([1, 1000, 5, 1])
+torch.Size([5, 2500])
+inside dot att torch.Size([1, 58, 1024]) torch.Size([1, 1024])
+score torch.Size([1, 58, 1])
+input shape torch.Size([1, 1, 1024])
+input shape torch.Size([1, 1, 100])
+input shape torch.Size([1, 1024])
+input torch.Size([1, 1, 1024])
+input shape torch.Size([1, 1024])
+input torch.Size([1, 1, 1024])
+concat features torch.Size([5, 2500]) torch.Size([5, 1, 1024]) torch.Size([5, 1, 100])
+Error: RuntimeError('Sizes of tensors must match except in dimension 1. Expected size 2500 but got size 1024 for tensor number 1 in the list.',)
+Evaluating: data/json_feat_2.1.0/pick_and_place_simple-Knife-None-SideTable-3/trial_T20190918_184236_557252
+No. of trajectories left: 811
+Resetting ThorEnv
+Task: move a knife over to the microwaves cabinet
+--------------------------------------------------------------------------------
+x.shape torch.Size([1, 1000, 5, 1])
+torch.Size([5, 2500])
+inside dot att torch.Size([1, 49, 1024]) torch.Size([1, 1024])
+score torch.Size([1, 49, 1])
+input shape torch.Size([1, 1, 1024])
+input shape torch.Size([1, 1, 100])
+input shape torch.Size([1, 1024])
+input torch.Size([1, 1, 1024])
+input shape torch.Size([1, 1024])
+input torch.Size([1, 1, 1024])
+concat features torch.Size([5, 2500]) torch.Size([5, 1, 1024]) torch.Size([5, 1, 100])
+Error: RuntimeError('Sizes of tensors must match except in dimension 1. Expected size 2500 but got size 1024 for tensor number 1 in the list.',)
+Evaluating: data/json_feat_2.1.0/pick_clean_then_place_in_recep-ButterKnife-None-Drawer-30/trial_T20190908_052007_212776
+No. of trajectories left: 810
+Resetting ThorEnv
+Task: Place a rinsed knife inside a drawer.
+--------------------------------------------------------------------------------
+x.shape torch.Size([1, 1000, 5, 1])
+torch.Size([5, 2500])
+inside dot att torch.Size([1, 124, 1024]) torch.Size([1, 1024])
+score torch.Size([1, 124, 1])
+input shape torch.Size([1, 1, 1024])
+input shape torch.Size([1, 1, 100])
+input shape torch.Size([1, 1024])
+input torch.Size([1, 1, 1024])
+input shape torch.Size([1, 1024])
+input torch.Size([1, 1, 1024])
+concat features torch.Size([5, 2500]) torch.Size([5, 1, 1024]) torch.Size([5, 1, 100])
+Error: RuntimeError('Sizes of tensors must match except in dimension 1. Expected size 2500 but got size 1024 for tensor number 1 in the list.',)
+Evaluating: data/json_feat_2.1.0/pick_clean_then_place_in_recep-ButterKnife-None-Drawer-30/trial_T20190908_052007_212776
+No. of trajectories left: 809
+Resetting ThorEnv
+Task: Put a cleaned knife in a drawer. 
+--------------------------------------------------------------------------------
+x.shape torch.Size([1, 1000, 5, 1])
+torch.Size([5, 2500])
+inside dot att torch.Size([1, 82, 1024]) torch.Size([1, 1024])
+score torch.Size([1, 82, 1])
+input shape torch.Size([1, 1, 1024])
+input shape torch.Size([1, 1, 100])
+input shape torch.Size([1, 1024])
+input torch.Size([1, 1, 1024])
+input shape torch.Size([1, 1024])
+input torch.Size([1, 1, 1024])
+concat features torch.Size([5, 2500]) torch.Size([5, 1, 1024]) torch.Size([5, 1, 100])
+Error: RuntimeError('Sizes of tensors must match except in dimension 1. Expected size 2500 but got size 1024 for tensor number 1 in the list.',)
+Evaluating: data/json_feat_2.1.0/pick_clean_then_place_in_recep-ButterKnife-None-Drawer-30/trial_T20190908_052007_212776
+No. of trajectories left: 808
+Resetting ThorEnv
+Task: place a clean knife in the drawer
+--------------------------------------------------------------------------------
+x.shape torch.Size([1, 1000, 5, 1])
+torch.Size([5, 2500])
+inside dot att torch.Size([1, 48, 1024]) torch.Size([1, 1024])
+score torch.Size([1, 48, 1])
+input shape torch.Size([1, 1, 1024])
+input shape torch.Size([1, 1, 100])
+input shape torch.Size([1, 1024])
+input torch.Size([1, 1, 1024])
+input shape torch.Size([1, 1024])
+input torch.Size([1, 1, 1024])
+concat features torch.Size([5, 2500]) torch.Size([5, 1, 1024]) torch.Size([5, 1, 100])
+Error: RuntimeError('Sizes of tensors must match except in dimension 1. Expected size 2500 but got size 1024 for tensor number 1 in the list.',)
+Evaluating: data/json_feat_2.1.0/pick_heat_then_place_in_recep-AppleSliced-None-CounterTop-14/trial_T20190907_232225_725376
+No. of trajectories left: 807
+Resetting ThorEnv
+Task: Place a cooked slice of apple to the right of the yellow knife on the counter.
+--------------------------------------------------------------------------------
+x.shape torch.Size([1, 1000, 5, 1])
+torch.Size([5, 2500])
+inside dot att torch.Size([1, 124, 1024]) torch.Size([1, 1024])
+score torch.Size([1, 124, 1])
+input shape torch.Size([1, 1, 1024])
+input shape torch.Size([1, 1, 100])
+input shape torch.Size([1, 1024])
+input torch.Size([1, 1, 1024])
+input shape torch.Size([1, 1024])
+input torch.Size([1, 1, 1024])
+concat features torch.Size([5, 2500]) torch.Size([5, 1, 1024]) torch.Size([5, 1, 100])
+Error: RuntimeError('Sizes of tensors must match except in dimension 1. Expected size 2500 but got size 1024 for tensor number 1 in the list.',)
+Evaluating: data/json_feat_2.1.0/pick_heat_then_place_in_recep-AppleSliced-None-CounterTop-14/trial_T20190907_232225_725376
+No. of trajectories left: 806
+Resetting ThorEnv
+Task: Slice an apple, cook it and set it on the counter
+--------------------------------------------------------------------------------
+x.shape torch.Size([1, 1000, 5, 1])
+torch.Size([5, 2500])
+inside dot att torch.Size([1, 106, 1024]) torch.Size([1, 1024])
+score torch.Size([1, 106, 1])
+input shape torch.Size([1, 1, 1024])
+input shape torch.Size([1, 1, 100])
+input shape torch.Size([1, 1024])
+input torch.Size([1, 1, 1024])
+input shape torch.Size([1, 1024])
+input torch.Size([1, 1, 1024])
+concat features torch.Size([5, 2500]) torch.Size([5, 1, 1024]) torch.Size([5, 1, 100])
+Error: RuntimeError('Sizes of tensors must match except in dimension 1. Expected size 2500 but got size 1024 for tensor number 1 in the list.',)
+Evaluating: data/json_feat_2.1.0/pick_heat_then_place_in_recep-AppleSliced-None-CounterTop-14/trial_T20190907_232225_725376
+No. of trajectories left: 805
+Resetting ThorEnv
+Task: Put a warm apple slice on the counter. 
+--------------------------------------------------------------------------------
+x.shape torch.Size([1, 1000, 5, 1])
+torch.Size([5, 2500])
+inside dot att torch.Size([1, 129, 1024]) torch.Size([1, 1024])
+score torch.Size([1, 129, 1])
+input shape torch.Size([1, 1, 1024])
+input shape torch.Size([1, 1, 100])
+input shape torch.Size([1, 1024])
+input torch.Size([1, 1, 1024])
+input shape torch.Size([1, 1024])
+input torch.Size([1, 1, 1024])
+concat features torch.Size([5, 2500]) torch.Size([5, 1, 1024]) torch.Size([5, 1, 100])
+Error: RuntimeError('Sizes of tensors must match except in dimension 1. Expected size 2500 but got size 1024 for tensor number 1 in the list.',)
+Evaluating: data/json_feat_2.1.0/pick_two_obj_and_place-Spoon-None-CounterTop-23/trial_T20190908_065238_500229
+No. of trajectories left: 804
+Resetting ThorEnv
+Task: Move two spoons to the kitchen counter. 
